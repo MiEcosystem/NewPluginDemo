@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="plug_common_lib">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/NewXmPluginSDK/common_ui/libs_ex/plug_common_lib.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

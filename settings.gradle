@@ -1,1 +1,1 @@
-include ':app'
+include ':app',':NewXmPluginSDK:pluglib',':NewXmPluginSDK:common_ui'
