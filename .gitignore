@@ -31,4 +31,9 @@ proguard/
 # Android Studio captures folder
 captures/
 
+gradle/
+gradlew
+gradlew.bat
+.idea/
+*.iml
 NewXmPluginSDK/
