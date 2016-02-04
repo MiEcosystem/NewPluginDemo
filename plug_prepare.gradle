@@ -1,0 +1,12 @@
+//def stdout = new ByteArrayOutputStream()
+//project.exec {
+//    commandLine "git",
+//            "push",
+//            defaultOutputFile,
+//            "/sdcard/SmartHome/plugin/debug/1.mpk"
+//    standardOutput = stdout
+//}
+//def error = stdout.toString().trim()
+//if (error) {
+//    println "install error1:" + error
+//}
