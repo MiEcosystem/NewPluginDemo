@@ -24,7 +24,6 @@ import java.util.List;
 
 public class ApiDemosActivity extends XmPluginBaseActivity {
 
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

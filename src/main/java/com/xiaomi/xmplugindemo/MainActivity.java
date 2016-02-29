@@ -65,8 +65,7 @@ public class MainActivity extends XmPluginBaseActivity implements StateChangedLi
 
         mLayoutInflater = LayoutInflater.from(activity());
         // 设置titlebar在顶部透明显示时的顶部padding
-        View titleBarView = findViewById(R.id.title_bar);
-        mHostActivity.setTitleBarPadding(titleBarView);
+        mHostActivity.setTitleBarPadding(findViewById(R.id.title_bar));
         ((TextView) findViewById(R.id.title_bar_title)).setText(mDevice.getName());
         findViewById(R.id.title_bar_return).setOnClickListener(new OnClickListener() {
             @Override
@@ -141,7 +140,7 @@ public class MainActivity extends XmPluginBaseActivity implements StateChangedLi
         MenuDialog menuDialog = new MenuDialog(activity());
         menuDialog.setBackGroundColor(0xff16ccec);
         menuDialog.setItems(new String[] {
-                "通用设置", "透明titlebar", "Dialog", "分享", "ApiDemo", "测试用例"
+                "通用设置", "透明titlebar", "Dialog", "分享", "ApiDemo", "测试用例","Api自动测试"
         }, new MenuDialog.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -201,6 +200,9 @@ public class MainActivity extends XmPluginBaseActivity implements StateChangedLi
                         break;
                     case 5:
                         startActivity(null, TestCaseActivity.class.getName());
+                        break;
+                    case 6:
+                        startActivity(null, ApiTestActivity.class.getName());
                         break;
                     default:
                         break;
@@ -334,7 +336,21 @@ public class MainActivity extends XmPluginBaseActivity implements StateChangedLi
                         });
                         break;
                     }
-                   
+                    case 7: {
+                        if (convertView == null) {
+                            convertView = mLayoutInflater.inflate(R.layout.menu_dialog_item, null);
+                        }
+                        TextView textView = (TextView) convertView.findViewById(R.id.text1);
+                        textView.setText("自动测试");
+                        convertView.setOnClickListener(new OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                startActivity(null, ApiTestActivity.class.getName());
+                                menuDialog.dismiss();
+                            }
+                        });
+                        break;
+                    }
                     default:
                         break;
                 }
@@ -353,12 +369,12 @@ public class MainActivity extends XmPluginBaseActivity implements StateChangedLi
 
             @Override
             public int getCount() {
-                return 7;
+                return 8;
             }
 
             @Override
             public int getViewTypeCount() {
-                return 7;
+                return 8;
             }
 
             @Override

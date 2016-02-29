@@ -66,7 +66,9 @@ public class MessageReceiver implements IXmPluginMessageReceiver {
     @Override
     public boolean handleMessage(Context context, XmPluginPackage xmPluginPackage, int type,
             Intent intent, DeviceStat deviceStat, MessageCallback callback) {
-        // TODO 主app调用插件获取数据
+        if(callback!=null){
+            callback.onSuccess(intent);
+        }
         return false;
     }
 
