@@ -4,7 +4,9 @@ package com.xiaomi.xmplugindemo;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +16,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.tencent.mm.sdk.openapi.IWXAPI;
+import com.tencent.mm.sdk.openapi.SendMessageToWX;
+import com.tencent.mm.sdk.openapi.WXImageObject;
+import com.tencent.mm.sdk.openapi.WXMediaMessage;
+import com.tencent.mm.sdk.openapi.WXWebpageObject;
 import com.xiaomi.smarthome.common.ui.widget.XmRadioGroup;
 import com.xiaomi.smarthome.device.api.Callback;
 import com.xiaomi.smarthome.device.api.SceneInfo;
@@ -184,6 +191,49 @@ public class TestCaseActivity extends XmPluginBaseActivity {
             }
         });
 
+        addTestCase("loadWebView", new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mHostActivity.loadWebView("http://smartmifaq.mi-ae.cn/AirPurifierQA/index.html","Q & A");
+            }
+        });
+
+        addTestCase("createWXAPI", new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                View view = getWindow().getDecorView();
+                if (view == null) {
+                    return;
+                }
+                Bitmap bitmap = null;//= view.getDrawingCache();
+                if (bitmap == null) {
+                    if (view.getWidth() > 0 && view.getHeight() > 0) {
+                        bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.RGB_565);
+                        Canvas canvas = new Canvas(bitmap);
+                        view.draw(canvas);
+                    }
+                }
+
+                if (bitmap == null) {
+                    return;
+                }
+
+                IWXAPI wxapi = XmPluginHostApi.instance().createWXAPI(activity(),true);
+                WXMediaMessage msg = new WXMediaMessage();
+                msg.title = "test";
+                msg.description = "wx share test";
+                msg.setThumbImage(resizeBitmap(bitmap,150));
+                msg.mediaObject = new WXImageObject(bitmap);
+
+                SendMessageToWX.Req req = new SendMessageToWX.Req();
+                req.transaction = String.valueOf(System.currentTimeMillis());
+                req.message = msg;
+                req.scene = SendMessageToWX.Req.WXSceneSession;
+
+                boolean ret = wxapi.sendReq(req);
+            }
+        });
+
     }
 
     void addTestCase(String name, OnClickListener listener) {
@@ -194,4 +244,20 @@ public class TestCaseActivity extends XmPluginBaseActivity {
         mListContainer.addView(view, lp);
     }
 
+    public static Bitmap resizeBitmap(Bitmap target, int newWidth)
+    {
+        int width = target.getWidth();
+        int height = target.getHeight();
+        Matrix matrix = new Matrix();
+        if(width>height) {
+            float scaleWidth = ((float) newWidth) / width;
+            matrix.postScale(scaleWidth, scaleWidth);
+        }else {
+            float scaleHeight = ((float) newWidth) / height;
+            matrix.postScale(scaleHeight, scaleHeight);
+        }
+        Bitmap bmp = Bitmap.createBitmap(target, 0, 0, width, height, matrix,
+                true);
+        return bmp;
+    }
 }

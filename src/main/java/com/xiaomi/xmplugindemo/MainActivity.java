@@ -245,20 +245,25 @@ public class MainActivity extends XmPluginBaseActivity implements StateChangedLi
                         TextView textView = (TextView) convertView.findViewById(R.id.text1);
                         textView.setText("开关");
                         SwitchButton switchButton = (SwitchButton)convertView.findViewById(R.id.slide_btn);
-                        switchButton.setOnCheckedChangeListener(null);
-                        switchButton.setChecked(mDevice.getRgb()!=0);
-                        switchButton.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-                            @Override
-                            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                                JSONArray params = new JSONArray();
-                                if(isChecked){
-                                    params.put(0xffffff);
-                                }else{
-                                    params.put(0);
+                        if(mDevice.isReadOnlyShared()){
+                            switchButton.setEnabled(false);
+                        }else {
+                            switchButton.setEnabled(true);
+                            switchButton.setOnCheckedChangeListener(null);
+                            switchButton.setChecked(mDevice.getRgb() != 0);
+                            switchButton.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+                                @Override
+                                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                                    JSONArray params = new JSONArray();
+                                    if (isChecked) {
+                                        params.put(0xffffff);
+                                    } else {
+                                        params.put(0);
+                                    }
+                                    mDevice.callMethod("set_rgb", params, null, null);
                                 }
-                                mDevice.callMethod("set_rgb", params, null, null);
-                            }
-                        });
+                            });
+                        }
                         break;
                     }
                     case 2: {

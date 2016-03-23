@@ -4,9 +4,11 @@ package com.xiaomi.xmplugindemo;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Message;
 import android.os.SystemClock;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
@@ -31,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class ApiTestActivity extends XmPluginBaseActivity {
+    static final String TAG = "ApiTest";
 
     HtmlTextView mTextView;
     StringBuffer mTextInfo = new StringBuffer();
@@ -38,17 +41,23 @@ public class ApiTestActivity extends XmPluginBaseActivity {
 
     List<DeviceStat> mDeviceList;
 
+
     static class TestStatus {
         public TestStatus(String method) {
             this.methodName = method;
         }
 
+        public long startThread;
+        public long endThread;
         public int status;
         public String methodName;
         public String result;
         public long startTime;
         public long consumeTime;
     }
+
+    HandlerThread mTestHanderThread;
+    Handler mTestThreadHandler;
 
     HashMap<String, TestStatus> mTestStatusHasmap = new HashMap<>();
     ArrayList<TestStatus> mTestStatusList = new ArrayList<>();
@@ -68,6 +77,9 @@ public class ApiTestActivity extends XmPluginBaseActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mTestHanderThread = new HandlerThread("test api");
+        mTestHanderThread.start();
+        mTestThreadHandler = new Handler(mTestHanderThread.getLooper());
 
         setContentView(R.layout.activity_api_test);
 
@@ -85,6 +97,31 @@ public class ApiTestActivity extends XmPluginBaseActivity {
         findViewById(R.id.title_bar_more).setVisibility(View.GONE);
 
         mTextView = (HtmlTextView) findViewById(R.id.text_view);
+        findViewById(R.id.test_other).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mTextInfo = new StringBuffer();
+                mTestStatusHasmap.clear();
+                mTestStatusList.clear();
+                mMainHandler.sendEmptyMessageDelayed(1, 100);
+                mTestThreadHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        test();
+                    }
+                });
+            }
+        });
+        findViewById(R.id.test_main).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mTextInfo = new StringBuffer();
+                mTestStatusHasmap.clear();
+                mTestStatusList.clear();
+                mMainHandler.sendEmptyMessageDelayed(1, 100);
+                test();
+            }
+        });
     }
 
     @Override
@@ -98,37 +135,35 @@ public class ApiTestActivity extends XmPluginBaseActivity {
     public void onResume() {
         super.onResume();
         mIsResumed = true;
-        mTextInfo = new StringBuffer();
-        mTestStatusHasmap.clear();
-        mTestStatusList.clear();
-        mMainHandler.sendEmptyMessageDelayed(1, 100);
-        new Thread() {
-            @Override
-            public void run() {
 
-
-                addInfo(XmPluginHostApi.instance() != null, "instance");
-                addInfo(XmPluginHostApi.instance().getApiLevel() > 0, "getApiLevel", XmPluginHostApi.instance().getApiLevel());
-                addInfo(!TextUtils.isEmpty(XmPluginHostApi.instance().getChannel()), "getChannel", XmPluginHostApi.instance().getChannel());
-                addInfo(XmPluginHostApi.instance().application() != null, "application");
-                addInfo(XmPluginHostApi.instance().context() != null, "context");
-                testCallSmartHomeApi();
-                testCallHttpApi();
-                testCallHttpApiV13();
-                testCallMethod();
-                testDeviceList();
-                testSubscribeDevice();
-                addInfo(XmPluginHostApi.instance().getAccountId() != null, "getAccountId", XmPluginHostApi.instance().getAccountId());
-                addInfo(XmPluginHostApi.instance().getLastLocation() != null, "getLastLocation");
-                testUpdateDeviceList();
-                testUpdateDeviceProperties();
-                testGetUserInfo();
-                testSendMessage();
-                testScence();
-            }
-        }.start();
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mTestHanderThread.quit();
+    }
+
+    void test(){
+        addInfo(XmPluginHostApi.instance() != null, "instance");
+        addInfo(XmPluginHostApi.instance().getApiLevel() > 0, "getApiLevel", XmPluginHostApi.instance().getApiLevel());
+        addInfo(!TextUtils.isEmpty(XmPluginHostApi.instance().getChannel()), "getChannel", XmPluginHostApi.instance().getChannel());
+        addInfo(XmPluginHostApi.instance().application() != null, "application");
+        addInfo(XmPluginHostApi.instance().context() != null, "context");
+        testCallSmartHomeApi();
+        testCallHttpApi();
+        testCallHttpApiV13();
+        testCallMethod();
+        testDeviceList();
+        testSubscribeDevice();
+        addInfo(XmPluginHostApi.instance().getAccountId() != null, "getAccountId", XmPluginHostApi.instance().getAccountId());
+        addInfo(XmPluginHostApi.instance().getLastLocation() != null, "getLastLocation");
+        testUpdateDeviceList();
+        testUpdateDeviceProperties();
+        testGetUserInfo();
+        testSendMessage();
+        testScence();
+    }
 
     void testCallSmartHomeApi() {
         start("callSmartHomeApi");
@@ -324,7 +359,7 @@ public class ApiTestActivity extends XmPluginBaseActivity {
         XmPluginHostApi.instance().getUserInfo(XmPluginHostApi.instance().getAccountId(), new Callback<UserInfo>() {
             @Override
             public void onSuccess(UserInfo result) {
-                addInfo(true, "getUserInfo", result.nickName+result.phone);
+                addInfo(true, "getUserInfo", result.nickName + result.phone);
             }
 
             @Override
@@ -390,6 +425,7 @@ public class ApiTestActivity extends XmPluginBaseActivity {
         }
         TestStatus testStatus = new TestStatus(method);
         testStatus.startTime = System.currentTimeMillis();
+        testStatus.startThread = Thread.currentThread().getId();
         mTestStatusHasmap.put(method, testStatus);
         mTestStatusList.add(testStatus);
     }
@@ -399,6 +435,7 @@ public class ApiTestActivity extends XmPluginBaseActivity {
     }
 
     public synchronized void addInfo(final boolean bl, final String method, final Object info) {
+        Log.d(TAG,"thread:"+Thread.currentThread().getName()+" "+Thread.currentThread().getId()+" method:"+method);
         TestStatus testStatus = mTestStatusHasmap.get(method);
         if (testStatus == null) {
             testStatus = new TestStatus(method);
@@ -410,6 +447,13 @@ public class ApiTestActivity extends XmPluginBaseActivity {
         testStatus.result = info != null ? info.toString() : null;
         if(testStatus.startTime>0){
             testStatus.consumeTime = System.currentTimeMillis()-testStatus.startTime;
+        }
+        if(testStatus.startThread>0){
+            testStatus.endThread = Thread.currentThread().getId();
+        }
+        if(testStatus.startThread!=testStatus.endThread){
+            testStatus.status = 2;
+            testStatus.result+="--- callback not in same Thread";
         }
     }
 

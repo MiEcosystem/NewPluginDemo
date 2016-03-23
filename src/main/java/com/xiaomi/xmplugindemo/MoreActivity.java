@@ -131,7 +131,7 @@ public class MoreActivity extends XmPluginBaseActivity {
                 // String did, ArrayList<MenuItemBase> menus,
                 // boolean useDefault, int requestCode
                 // 设置自定义菜单
-                ArrayList<MenuItemBase> menus = new ArrayList<IXmPluginHostActivity.MenuItemBase>();
+                ArrayList<MenuItemBase> menus = new ArrayList<MenuItemBase>();
 
                 //
                 StringMenuItem stringMenuItem = new StringMenuItem();
