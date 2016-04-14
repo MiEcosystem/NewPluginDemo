@@ -356,6 +356,20 @@ public class MainActivity extends XmPluginBaseActivity implements StateChangedLi
                         });
                         break;
                     }
+                    case 8:{
+                        if (convertView == null) {
+                            convertView = mLayoutInflater.inflate(R.layout.menu_dialog_item, null);
+                        }
+                        TextView textView = (TextView) convertView.findViewById(R.id.text1);
+                        textView.setText("使用帮助");
+                        convertView.setOnClickListener(new OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                mHostActivity.openHelpActivity();
+                                menuDialog.dismiss();
+                            }
+                        });
+                    }
                     default:
                         break;
                 }
@@ -374,12 +388,12 @@ public class MainActivity extends XmPluginBaseActivity implements StateChangedLi
 
             @Override
             public int getCount() {
-                return 8;
+                return 9;
             }
 
             @Override
             public int getViewTypeCount() {
-                return 8;
+                return 9;
             }
 
             @Override
