@@ -1,6 +1,9 @@
 
 package com.xiaomi.xmplugindemo;
 
+import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -10,6 +13,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.xiaomi.smarthome.common.ui.dialog.MLAlertDialog;
 import com.xiaomi.smarthome.device.api.DeviceStat;
@@ -20,6 +24,7 @@ import com.xiaomi.smarthome.device.api.XmPluginHostApi;
 import org.json.JSONArray;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class ApiDemosActivity extends XmPluginBaseActivity {
@@ -137,6 +142,26 @@ public class ApiDemosActivity extends XmPluginBaseActivity {
             @Override
             public void onClick(View v) {
                 finishParent(null);
+            }
+        });
+
+        findViewById(R.id.activity_set_timer).setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+
+                Intent intent = XmPluginHostApi.instance().getBroadCastIntent(mDeviceStat);
+                PendingIntent pi = PendingIntent.getBroadcast(
+                        getApplicationContext(), 0, intent,
+                        PendingIntent.FLAG_UPDATE_CURRENT);
+                Calendar c = Calendar.getInstance();
+                c.setTimeInMillis(System.currentTimeMillis());
+                c.add(Calendar.SECOND, 5);
+                AlarmManager alarmManager=(AlarmManager)activity().getSystemService(Activity.ALARM_SERVICE);
+                alarmManager.set(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), pi);// 设置闹钟
+                Toast.makeText(activity().getApplicationContext(),"定时设置成功，5s后重新启动插件",Toast.LENGTH_SHORT).show();
+                finishParent(null);
+
             }
         });
     }

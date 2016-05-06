@@ -14,8 +14,8 @@ public class ParcelData implements Parcelable {
         out.writeInt(mData);
     }
 
-    public static final Creator<ParcelData> CREATOR
-            = new ClassLoaderCreator<ParcelData>() {
+    public static final Parcelable.Creator<ParcelData> CREATOR
+            = new Parcelable.ClassLoaderCreator<ParcelData>() {
         public ParcelData createFromParcel(Parcel in) {
             return new ParcelData(in);
         }

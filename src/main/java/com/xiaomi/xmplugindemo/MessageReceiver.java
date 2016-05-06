@@ -3,7 +3,6 @@ package com.xiaomi.xmplugindemo;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -25,6 +24,7 @@ public class MessageReceiver implements IXmPluginMessageReceiver {
             Intent intent,
             DeviceStat deviceStat) {
         switch (type) {
+            case MSG_BROADCAST:
             case LAUNCHER: {// 启动入口
                 if (deviceStat.model.startsWith("xiaomi.bledemo")) {
                     XmPluginHostApi.instance().startActivity(context, xmPluginPackage, intent,

@@ -163,6 +163,8 @@ public class ApiTestActivity extends XmPluginBaseActivity {
         testGetUserInfo();
         testSendMessage();
         testScence();
+        testGetDeviceHistoryEvent();
+        testGetDeviceHistoryProp();
     }
 
     void testCallSmartHomeApi() {
@@ -417,6 +419,43 @@ public class ApiTestActivity extends XmPluginBaseActivity {
             }
         });
 
+    }
+
+
+    public void testGetDeviceHistoryEvent(){
+        start("testGetDeviceHistoryEvent");
+
+        long endTime = System.currentTimeMillis()/1000;
+        long startTime = endTime-24*60*60*2;
+        XmPluginHostApi.instance().getUserDeviceData(mDeviceStat.model, mDeviceStat.did,"event", "button_pressed" , startTime, endTime, new Callback<JSONArray>() {
+            @Override
+            public void onSuccess(JSONArray jsonArray) {
+                addInfo(true, "testGetDeviceHistoryEvent");
+            }
+
+            @Override
+            public void onFailure(int code, String info) {
+                addInfo(false, "testGetDeviceHistoryEvent", "error:" + code + " " + info);
+            }
+        });
+
+    }
+    public void testGetDeviceHistoryProp(){
+        start("testGetDeviceHistoryProp");
+
+        long endTime = System.currentTimeMillis()/1000;
+        long startTime = endTime-24*60*60*2;
+        XmPluginHostApi.instance().getUserDeviceData(mDeviceStat.model, mDeviceStat.did,  "prop","temperature", startTime, endTime, new Callback<JSONArray>() {
+            @Override
+            public void onSuccess(JSONArray jsonArray) {
+                addInfo(true, "testGetDeviceHistoryProp");
+            }
+
+            @Override
+            public void onFailure(int code, String info) {
+                addInfo(false, "testGetDeviceHistoryProp", "error:" + code + " " + info);
+            }
+        });
     }
 
     public synchronized void start(String method) {
