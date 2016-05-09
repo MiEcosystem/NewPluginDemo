@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.xiaomi.smarthome.device.api.BaseFragment;
 
@@ -27,8 +28,7 @@ public class FragmentPage extends BaseFragment {
 
             @Override
             public void onClick(View v) {
-                // TODO Auto-generated method stub
-
+                Toast.makeText(xmPluginActivity().activity(),"test",Toast.LENGTH_SHORT).show();
             }
         });
         view.findViewById(R.id.cancel).setOnClickListener(new OnClickListener() {
