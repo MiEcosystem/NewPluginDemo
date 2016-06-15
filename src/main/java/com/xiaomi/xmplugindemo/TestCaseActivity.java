@@ -29,6 +29,7 @@ import com.xiaomi.smarthome.device.api.XmPluginBaseActivity;
 import com.xiaomi.smarthome.device.api.XmPluginHostApi;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -37,6 +38,7 @@ import java.util.List;
 
 public class TestCaseActivity extends XmPluginBaseActivity {
 
+    static final int SCAN_BARCODE = 1;
     LinearLayout mListContainer;
     LayoutInflater mInflater;
 
@@ -234,6 +236,61 @@ public class TestCaseActivity extends XmPluginBaseActivity {
             }
         });
 
+        addTestCase("水电煤缴费", new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mHostActivity.openRechargePage(0,mDeviceStat.latitude,mDeviceStat.longitude);
+            }
+        });
+
+        addTestCase("水缴费", new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mHostActivity.openRechargePage(1,mDeviceStat.latitude,mDeviceStat.longitude);
+            }
+        });
+        addTestCase("电缴费", new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mHostActivity.openRechargePage(2,mDeviceStat.latitude,mDeviceStat.longitude);
+            }
+        });
+        addTestCase("燃气缴费", new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mHostActivity.openRechargePage(3,mDeviceStat.latitude,mDeviceStat.longitude);
+            }
+        });
+
+        addTestCase("查询剩余煤气费", new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                XmPluginHostApi.instance().getRechargeBalances(3,mDeviceStat.latitude,mDeviceStat.longitude,new Callback<JSONObject>(){
+
+                    @Override
+                    public void onSuccess(JSONObject result) {
+                        if(result==null){
+                            Toast.makeText(activity(),"没有查询到余额",Toast.LENGTH_SHORT).show();
+                        }else{
+                            Toast.makeText(activity(),""+result.optInt("balance"),Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(int error, String errorInfo) {
+                        Toast.makeText(activity(),errorInfo,Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+
+        addTestCase("扫描二维码", new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mHostActivity.openScanBarcodePage(null,SCAN_BARCODE);
+            }
+        });
+
     }
 
     void addTestCase(String name, OnClickListener listener) {
@@ -260,4 +317,17 @@ public class TestCaseActivity extends XmPluginBaseActivity {
                 true);
         return bmp;
     }
+
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode==RESULT_OK){
+            if(requestCode==SCAN_BARCODE){
+                String result = data.getStringExtra("scan_result");
+                Toast.makeText(activity(),result,Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
 }

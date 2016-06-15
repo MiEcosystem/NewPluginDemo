@@ -2,6 +2,8 @@
 package com.xiaomi.xmplugindemo;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -165,6 +167,8 @@ public class ApiTestActivity extends XmPluginBaseActivity {
         testScence();
         testGetDeviceHistoryEvent();
         testGetDeviceHistoryProp();
+
+        testBarcodeCodec();
     }
 
     void testCallSmartHomeApi() {
@@ -456,6 +460,31 @@ public class ApiTestActivity extends XmPluginBaseActivity {
                 addInfo(false, "testGetDeviceHistoryProp", "error:" + code + " " + info);
             }
         });
+    }
+
+    public void testBarcodeCodec(){
+        AsyncTask<Void,Void,Boolean> task = new AsyncTask<Void, Void, Boolean>() {
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                start("testBarcodeCodec");
+            }
+
+            @Override
+            protected Boolean doInBackground(Void... params) {
+                String barcode = "testBarcodeCodec";
+                Bitmap bitmap = XmPluginHostApi.instance().encodeBarcode(barcode,300,300);
+                String decodeBarcode = XmPluginHostApi.instance().decodeBarcode(bitmap);
+                return barcode.equals(decodeBarcode);
+            }
+
+            @Override
+            protected void onPostExecute(Boolean aVoid) {
+                super.onPostExecute(aVoid);
+                addInfo(aVoid, "testBarcodeCodec");
+            }
+        };
+        task.execute();
     }
 
     public synchronized void start(String method) {
