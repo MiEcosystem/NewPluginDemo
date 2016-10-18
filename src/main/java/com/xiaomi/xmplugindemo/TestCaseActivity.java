@@ -5,48 +5,61 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.RequestBody;
+import com.squareup.okhttp.Response;
+import com.tencent.mm.sdk.modelmsg.SendMessageToWX;
+import com.tencent.mm.sdk.modelmsg.WXImageObject;
+import com.tencent.mm.sdk.modelmsg.WXMediaMessage;
 import com.tencent.mm.sdk.openapi.IWXAPI;
-import com.tencent.mm.sdk.openapi.SendMessageToWX;
-import com.tencent.mm.sdk.openapi.WXImageObject;
-import com.tencent.mm.sdk.openapi.WXMediaMessage;
-import com.tencent.mm.sdk.openapi.WXWebpageObject;
 import com.xiaomi.smarthome.common.ui.widget.XmRadioGroup;
 import com.xiaomi.smarthome.device.api.Callback;
+import com.xiaomi.smarthome.device.api.DeviceStat;
+import com.xiaomi.smarthome.device.api.IXmPluginHostActivity;
+import com.xiaomi.smarthome.device.api.Parser;
 import com.xiaomi.smarthome.device.api.SceneInfo;
-import com.xiaomi.smarthome.device.api.UserInfo;
 import com.xiaomi.smarthome.device.api.XmPluginBaseActivity;
 import com.xiaomi.smarthome.device.api.XmPluginHostApi;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class TestCaseActivity extends XmPluginBaseActivity {
 
     static final int SCAN_BARCODE = 1;
+    static final int REQUEST_MENU = 2;
     LinearLayout mListContainer;
     LayoutInflater mInflater;
+    DemoDevice mDevice;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_test_case);
+        // 初始化device
+        mDevice = DemoDevice.getDevice(mDeviceStat);
 
         mHostActivity.setTitleBarPadding(findViewById(R.id.title_bar));
 
@@ -196,7 +209,7 @@ public class TestCaseActivity extends XmPluginBaseActivity {
         addTestCase("loadWebView", new OnClickListener() {
             @Override
             public void onClick(View v) {
-                mHostActivity.loadWebView("http://smartmifaq.mi-ae.cn/AirPurifierQA/index.html","Q & A");
+                mHostActivity.loadWebView("http://smartmifaq.mi-ae.cn/AirPurifierQA/index.html", "Q & A");
             }
         });
 
@@ -220,11 +233,11 @@ public class TestCaseActivity extends XmPluginBaseActivity {
                     return;
                 }
 
-                IWXAPI wxapi = XmPluginHostApi.instance().createWXAPI(activity(),true);
+                IWXAPI wxapi = XmPluginHostApi.instance().createWXAPI(activity(), true);
                 WXMediaMessage msg = new WXMediaMessage();
                 msg.title = "test";
                 msg.description = "wx share test";
-                msg.setThumbImage(resizeBitmap(bitmap,150));
+                msg.setThumbImage(resizeBitmap(bitmap, 150));
                 msg.mediaObject = new WXImageObject(bitmap);
 
                 SendMessageToWX.Req req = new SendMessageToWX.Req();
@@ -239,46 +252,46 @@ public class TestCaseActivity extends XmPluginBaseActivity {
         addTestCase("水电煤缴费", new OnClickListener() {
             @Override
             public void onClick(View v) {
-                mHostActivity.openRechargePage(0,mDeviceStat.latitude,mDeviceStat.longitude);
+                mHostActivity.openRechargePage(0, mDeviceStat.latitude, mDeviceStat.longitude);
             }
         });
 
         addTestCase("水缴费", new OnClickListener() {
             @Override
             public void onClick(View v) {
-                mHostActivity.openRechargePage(1,mDeviceStat.latitude,mDeviceStat.longitude);
+                mHostActivity.openRechargePage(1, mDeviceStat.latitude, mDeviceStat.longitude);
             }
         });
         addTestCase("电缴费", new OnClickListener() {
             @Override
             public void onClick(View v) {
-                mHostActivity.openRechargePage(2,mDeviceStat.latitude,mDeviceStat.longitude);
+                mHostActivity.openRechargePage(2, mDeviceStat.latitude, mDeviceStat.longitude);
             }
         });
         addTestCase("燃气缴费", new OnClickListener() {
             @Override
             public void onClick(View v) {
-                mHostActivity.openRechargePage(3,mDeviceStat.latitude,mDeviceStat.longitude);
+                mHostActivity.openRechargePage(3, mDeviceStat.latitude, mDeviceStat.longitude);
             }
         });
 
         addTestCase("查询剩余煤气费", new OnClickListener() {
             @Override
             public void onClick(View v) {
-                XmPluginHostApi.instance().getRechargeBalances(3,mDeviceStat.latitude,mDeviceStat.longitude,new Callback<JSONObject>(){
+                XmPluginHostApi.instance().getRechargeBalances(3, mDeviceStat.latitude, mDeviceStat.longitude, new Callback<JSONObject>() {
 
                     @Override
                     public void onSuccess(JSONObject result) {
-                        if(result==null){
-                            Toast.makeText(activity(),"没有查询到余额",Toast.LENGTH_SHORT).show();
-                        }else{
-                            Toast.makeText(activity(),""+result.optInt("balance"),Toast.LENGTH_SHORT).show();
+                        if (result == null) {
+                            Toast.makeText(activity(), "没有查询到余额", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(activity(), "" + result.optInt("balance"), Toast.LENGTH_SHORT).show();
                         }
                     }
 
                     @Override
                     public void onFailure(int error, String errorInfo) {
-                        Toast.makeText(activity(),errorInfo,Toast.LENGTH_SHORT).show();
+                        Toast.makeText(activity(), errorInfo, Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -287,10 +300,206 @@ public class TestCaseActivity extends XmPluginBaseActivity {
         addTestCase("扫描二维码", new OnClickListener() {
             @Override
             public void onClick(View v) {
-                mHostActivity.openScanBarcodePage(null,SCAN_BARCODE);
+                mHostActivity.openScanBarcodePage(null, SCAN_BARCODE);
             }
         });
 
+        addTestCase("条形码扫描", new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Bundle bundle = new Bundle();
+                bundle.putIntArray("barcode_format", new int[]{IXmPluginHostActivity.BarcodeFormat.CODABAR.ordinal()});
+                mHostActivity.openScanBarcodePage(bundle, SCAN_BARCODE);
+            }
+        });
+
+        addTestCase("上传文件", new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                uploadFile("/sdcard/DCIM/share.jpg");
+            }
+        });
+
+        addTestCase("测试支付", new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mHostActivity.loadWebView("https://api.ucashier.mipay.com/api/trade/doWapCreate?createTime=1467784399&goodType=ordinary&inputCharset=UTF-8&notifyUrl=http://shopapi.io.mi.srv/app/shop/notify&orderDesc=%E6%99%BA%E8%83%BD%E5%AE%B6%E5%BA%AD&outOrderId=20160706135319101057766&partnerId=10000096&payMethod=directPay&productName=%E6%99%BA%E8%83%BD%E5%AE%B6%E5%BA%AD&returnUrl=https://home.mi.com/shop/orderdetail&sellerId=10000096&service=createDirectPayByUser&totalFee=100&xiaomiId=103434651&sign=nO_W8u7V7lrlF666_YrymWb31wy6zRQmW52qA56stON-UCcZwezRfqwCcJWeb3QkSCD8uPzSA_U8dIG1OsySX_KZxNrDp18q_i16vzNyfDArOakRCJq8qOUK_GqkuErl30PrTzEI0SZxaOJmnmb7yRnJPaCht_nnmdvKjkJAEes.", "");
+            }
+        });
+
+        addTestCase("异步请求", new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                JSONObject jsonObject = new JSONObject();
+                try {
+                    jsonObject.put("api_type", "locate");
+                    jsonObject.put("data", 1);
+                } catch (Exception e) {
+
+                }
+                XmPluginHostApi.instance().callRemoteAsync(new String[]{"insistek.351564056062854"}, 10046, jsonObject,
+                        new Callback<JSONObject>() {
+                            @Override
+                            public void onSuccess(JSONObject result) {
+                                Log.d("test", result.toString());
+                            }
+
+                            @Override
+                            public void onFailure(int error, String errorInfo) {
+                                Log.d("test", "error:" + error);
+                            }
+                        });
+            }
+        });
+
+        addTestCase("刷新设备信息", new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ArrayList<String> dids = new ArrayList<String>();
+                dids.add(mDeviceStat.did);
+                XmPluginHostApi.instance().updateDevice(dids, new Callback<List<DeviceStat>>() {
+                    @Override
+                    public void onSuccess(List<DeviceStat> result) {
+                        Toast.makeText(activity(), "onSuccess:" + result.size(), Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onFailure(int error, String errorInfo) {
+                        Toast.makeText(activity(), "onFailure", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+
+        addTestCase("更多菜单", new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                ArrayList<IXmPluginHostActivity.MenuItemBase> menus = new
+                        ArrayList<>();
+
+                ////插件自定义菜单，可以在public void onActivityResult(int requestCode, int resultCode, Intent data) 中接收用户点击的菜单项，String result = data.getStringExtra("menu");
+                IXmPluginHostActivity.StringMenuItem stringMenuItem = new
+                        IXmPluginHostActivity.StringMenuItem();
+                stringMenuItem.name = "test string menu";
+                menus.add(stringMenuItem);
+
+                //跳转到插件下一个activity的菜单
+                IXmPluginHostActivity.IntentMenuItem intentMenuItem = new
+                        IXmPluginHostActivity.IntentMenuItem();
+                intentMenuItem.name = "test intent menu";
+                intentMenuItem.intent =
+                        mHostActivity.getActivityIntent(null,
+                                ApiDemosActivity.class.getName());
+                menus.add(intentMenuItem);
+
+                //带开关按钮的菜单，可以自动调用设备rpc
+                IXmPluginHostActivity.SlideBtnMenuItem slideBtnMenuItem = new
+                        IXmPluginHostActivity.SlideBtnMenuItem();
+                slideBtnMenuItem.name = "test slide menu";
+                slideBtnMenuItem.isOn = mDevice.getRgb() > 0;
+                slideBtnMenuItem.onMethod = "set_rgb";
+                JSONArray onparams = new JSONArray();
+                onparams.put(0xffffff);
+                slideBtnMenuItem.onParams = onparams.toString();
+                slideBtnMenuItem.offMethod = "set_rgb";
+                JSONArray offparams = new JSONArray();
+                offparams.put(0);
+                slideBtnMenuItem.offParams =
+                        offparams.toString();
+                menus.add(slideBtnMenuItem);
+
+                Intent intent = new Intent();
+                intent.putExtra("security_setting_enable",true);
+                mHostActivity.openMoreMenu2(menus, true, REQUEST_MENU, intent);
+            }
+        });
+
+        addTestCase("测试支付", new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mHostActivity.loadWebView("http://home.mi.com/device/guide?model=zhimi.airpurifier.m1&locale=cn", "test");
+            }
+        });
+
+
+    }
+
+
+    private static class VoiceUploadUrl {
+
+        public static String parse(String key, JSONObject jsonObject) {
+            if (jsonObject.isNull(key)) {
+                return null;
+            }
+            JSONObject jo1 = jsonObject.optJSONObject(key);
+            if (jo1.isNull("url")) {
+                return null;
+            }
+            return jo1.optString("url");
+        }
+
+    }
+
+    private void uploadFile(final String filePath) {
+        try {
+            JSONObject jo = new JSONObject();
+            jo.put("did", "12464");
+            jo.put("suffix", "1");
+
+            XmPluginHostApi.instance().callSmartHomeApi(mDeviceStat.model, "/voiceint/genvoiceuploadurl", jo, new Callback<String>() {
+                @Override
+                public void onSuccess(final String result) {
+                    AsyncTask<Void, Void, Response> task = new AsyncTask<Void, Void, Response>() {
+                        @Override
+                        protected Response doInBackground(Void... params) {
+                            try {
+                                return uploadFile(result, filePath);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            return null;
+                        }
+
+                        @Override
+                        protected void onPostExecute(Response response) {
+                            super.onPostExecute(response);
+                            Log.d("test", "" + response.code() + " " + response.message());
+                        }
+                    };
+
+                    task.execute();
+                }
+
+                @Override
+                public void onFailure(int error, String errorInfo) {
+
+                }
+            }, new Parser<String>() {
+                @Override
+                public String parse(String result) throws JSONException {
+                    JSONObject jsonObject = new JSONObject(result);
+                    return VoiceUploadUrl.parse("1", jsonObject);
+                }
+            });
+
+        } catch (Exception ex) {
+            // Handle the error
+            ex.printStackTrace();
+        }
+    }
+
+    public Response uploadFile(String url, String filePath) throws IOException {
+        Log.d("test", "url:" + url);
+        OkHttpClient client = new OkHttpClient();
+        client.setConnectTimeout(30, TimeUnit.SECONDS);
+        client.setReadTimeout(15, TimeUnit.SECONDS);
+        client.setWriteTimeout(30, TimeUnit.SECONDS);
+        Request request = new Request.Builder()
+                .url(url)
+                .put(RequestBody.create(MediaType.parse(""), new File(filePath)))
+                .build();
+        return client.newCall(request).execute();
     }
 
     void addTestCase(String name, OnClickListener listener) {
@@ -301,15 +510,14 @@ public class TestCaseActivity extends XmPluginBaseActivity {
         mListContainer.addView(view, lp);
     }
 
-    public static Bitmap resizeBitmap(Bitmap target, int newWidth)
-    {
+    public static Bitmap resizeBitmap(Bitmap target, int newWidth) {
         int width = target.getWidth();
         int height = target.getHeight();
         Matrix matrix = new Matrix();
-        if(width>height) {
+        if (width > height) {
             float scaleWidth = ((float) newWidth) / width;
             matrix.postScale(scaleWidth, scaleWidth);
-        }else {
+        } else {
             float scaleHeight = ((float) newWidth) / height;
             matrix.postScale(scaleHeight, scaleHeight);
         }
@@ -322,11 +530,15 @@ public class TestCaseActivity extends XmPluginBaseActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(resultCode==RESULT_OK){
-            if(requestCode==SCAN_BARCODE){
+        if (resultCode == RESULT_OK) {
+            if (requestCode == SCAN_BARCODE) {
                 String result = data.getStringExtra("scan_result");
-                Toast.makeText(activity(),result,Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity(), result, Toast.LENGTH_SHORT).show();
+            } else if (requestCode == REQUEST_MENU) {
+                String result = data.getStringExtra("menu");
+                Toast.makeText(activity(), result, Toast.LENGTH_SHORT).show();
             }
+
         }
     }
 

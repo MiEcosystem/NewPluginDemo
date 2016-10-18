@@ -20,9 +20,12 @@ import com.xiaomi.smarthome.common.ui.dialog.MenuDialog;
 import com.xiaomi.smarthome.common.ui.widget.SwitchButton;
 import com.xiaomi.smarthome.device.api.BaseDevice;
 import com.xiaomi.smarthome.device.api.BaseDevice.StateChangedListener;
+import com.xiaomi.smarthome.device.api.IXmPluginHostActivity;
 import com.xiaomi.smarthome.device.api.XmPluginBaseActivity;
 
 import org.json.JSONArray;
+
+import java.util.ArrayList;
 
 public class MainActivity extends XmPluginBaseActivity implements StateChangedListener {
     static final int REQUEST_MENUS = 1;
@@ -84,7 +87,8 @@ public class MainActivity extends XmPluginBaseActivity implements StateChangedLi
                 // Intent intent = new Intent();
                 // startActivity(intent, MoreActivity.class.getName());
 //                moreMenuDefault();
-                moreMenuUseDefine();
+//                moreMenuUseDefine();
+                moreMenuNew();
             }
         });
 
@@ -133,8 +137,137 @@ public class MainActivity extends XmPluginBaseActivity implements StateChangedLi
             }
         });
 
+        mHostActivity.enableVerifyPincode();
     }
 
+    void openMoreActivity(){
+        ArrayList<IXmPluginHostActivity.MenuItemBase> menus = new
+                ArrayList<IXmPluginHostActivity.MenuItemBase>();
+
+        //
+        IXmPluginHostActivity.StringMenuItem stringMenuItem = new
+                IXmPluginHostActivity.StringMenuItem();
+        stringMenuItem.name = "test string menu";
+        menus.add(stringMenuItem);
+
+        //
+        IXmPluginHostActivity.IntentMenuItem intentMenuItem = new
+                IXmPluginHostActivity.IntentMenuItem();
+        intentMenuItem.name = "test intent menu";
+        intentMenuItem.intent =
+                mHostActivity.getActivityIntent(null,
+                        ApiDemosActivity.class.getName());
+        menus.add(intentMenuItem);
+
+        //
+        //
+        IXmPluginHostActivity.InfoMenuItem infoMenuItem = new
+                IXmPluginHostActivity.InfoMenuItem();
+        infoMenuItem.name = "test info menu";
+        menus.add(infoMenuItem);
+
+        //
+        IXmPluginHostActivity.SlideBtnMenuItem slideBtnMenuItem = new
+                IXmPluginHostActivity.SlideBtnMenuItem();
+        slideBtnMenuItem.name = "test slide menu";
+        slideBtnMenuItem.isOn = mDevice.getRgb() > 0;
+        slideBtnMenuItem.onMethod = "set_rgb";
+        JSONArray onparams = new JSONArray();
+        onparams.put(0xffffff);
+        slideBtnMenuItem.onParams =
+                onparams.toString();
+        slideBtnMenuItem.offMethod = "set_rgb";
+        JSONArray offparams = new JSONArray();
+        offparams.put(0);
+        slideBtnMenuItem.offParams =
+                offparams.toString();
+        menus.add(slideBtnMenuItem);
+
+        mHostActivity.openMoreMenu(menus, true,
+                REQUEST_MENUS);
+    }
+    void moreMenuNew(){
+        ArrayList<IXmPluginHostActivity.MenuItemBase> menus = new
+                ArrayList<>();
+
+        ////插件自定义菜单，可以在public void onActivityResult(int requestCode, int resultCode, Intent data) 中接收用户点击的菜单项，String result = data.getStringExtra("menu");
+        IXmPluginHostActivity.StringMenuItem stringMenuItem = new
+                IXmPluginHostActivity.StringMenuItem();
+        stringMenuItem.name = "test string menu";
+        menus.add(stringMenuItem);
+
+        //带开关按钮的菜单，可以自动调用设备rpc
+        IXmPluginHostActivity.SlideBtnMenuItem slideBtnMenuItem = new
+                IXmPluginHostActivity.SlideBtnMenuItem();
+        slideBtnMenuItem.name = "开关灯";
+        slideBtnMenuItem.isOn = mDevice.getRgb() > 0;
+        slideBtnMenuItem.onMethod = "set_rgb";
+        JSONArray onparams = new JSONArray();
+        onparams.put(0xffffff);
+        slideBtnMenuItem.onParams = onparams.toString();
+        slideBtnMenuItem.offMethod = "set_rgb";
+        JSONArray offparams = new JSONArray();
+        offparams.put(0);
+        slideBtnMenuItem.offParams =
+                offparams.toString();
+        menus.add(slideBtnMenuItem);
+
+        //跳转到插件下一个activity的菜单
+        IXmPluginHostActivity.IntentMenuItem intentMenuItem = null;
+        intentMenuItem = new
+                IXmPluginHostActivity.IntentMenuItem();
+        intentMenuItem.name = "透明titlebar";
+        intentMenuItem.intent =
+                mHostActivity.getActivityIntent(null,
+                        TransparentActivity.class.getName());
+        menus.add(intentMenuItem);
+
+        intentMenuItem = new
+                IXmPluginHostActivity.IntentMenuItem();
+        intentMenuItem.name = "Dialog";
+        intentMenuItem.intent =
+                mHostActivity.getActivityIntent(null,
+                        DiaglogActivity.class.getName());
+        menus.add(intentMenuItem);
+
+        intentMenuItem = new
+                IXmPluginHostActivity.IntentMenuItem();
+        intentMenuItem.name = "分享";
+        intentMenuItem.intent =
+                mHostActivity.getActivityIntent(null,
+                        ShareActivity.class.getName());
+        menus.add(intentMenuItem);
+
+        intentMenuItem = new
+                IXmPluginHostActivity.IntentMenuItem();
+        intentMenuItem.name = "ApiDemo";
+        intentMenuItem.intent =
+                mHostActivity.getActivityIntent(null,
+                        ApiDemosActivity.class.getName());
+        menus.add(intentMenuItem);
+
+        intentMenuItem = new
+                IXmPluginHostActivity.IntentMenuItem();
+        intentMenuItem.name = "测试用例";
+        intentMenuItem.intent =
+                mHostActivity.getActivityIntent(null,
+                        TestCaseActivity.class.getName());
+        menus.add(intentMenuItem);
+
+        intentMenuItem = new
+                IXmPluginHostActivity.IntentMenuItem();
+        intentMenuItem.name = "Api自动测试";
+        intentMenuItem.intent =
+                mHostActivity.getActivityIntent(null,
+                        ApiTestActivity.class.getName());
+        menus.add(intentMenuItem);
+
+
+
+        Intent intent = new Intent();
+        intent.putExtra("security_setting_enable",true);
+        mHostActivity.openMoreMenu2(menus, true, REQUEST_MENUS, intent);
+    }
     void moreMenuDefault() {
         // 下拉菜单
         MenuDialog menuDialog = new MenuDialog(activity());
@@ -147,43 +280,7 @@ public class MainActivity extends XmPluginBaseActivity implements StateChangedLi
                 switch (which) {
                     case 0:
                     {
-                        // ArrayList<MenuItemBase> menus = new
-                        // ArrayList<IXmPluginHostActivity.MenuItemBase>();
-                        //
-                        // //
-                        // StringMenuItem stringMenuItem = new
-                        // StringMenuItem();
-                        // stringMenuItem.name = "test string menu";
-                        // menus.add(stringMenuItem);
-                        //
-                        // //
-                        // IntentMenuItem intentMenuItem = new
-                        // IntentMenuItem();
-                        // intentMenuItem.name = "test intent menu";
-                        // intentMenuItem.intent =
-                        // mHostActivity.getActivityIntent(null,
-                        // ApiDemosActivity.class.getName());
-                        // menus.add(intentMenuItem);
-                        //
-                        // //
-                        // SlideBtnMenuItem slideBtnMenuItem = new
-                        // SlideBtnMenuItem();
-                        // slideBtnMenuItem.name = "test slide menu";
-                        // slideBtnMenuItem.isOn = mDevice.getRgb() > 0;
-                        // slideBtnMenuItem.onMethod = "set_rgb";
-                        // JSONArray onparams = new JSONArray();
-                        // onparams.put(0xffffff);
-                        // slideBtnMenuItem.onParams =
-                        // onparams.toString();
-                        // slideBtnMenuItem.offMethod = "set_rgb";
-                        // JSONArray offparams = new JSONArray();
-                        // offparams.put(0);
-                        // slideBtnMenuItem.offParams =
-                        // offparams.toString();
-                        // menus.add(slideBtnMenuItem);
-
-                        mHostActivity.openMoreMenu(null, true,
-                                REQUEST_MENUS);
+                        openMoreActivity();
                     }
                         break;
                     case 1:
@@ -230,8 +327,7 @@ public class MainActivity extends XmPluginBaseActivity implements StateChangedLi
                         convertView.setOnClickListener(new OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                mHostActivity.openMoreMenu(null, true,
-                                        REQUEST_MENUS);
+                                openMoreActivity();
                                 menuDialog.dismiss();
                             }
                         });
