@@ -10,8 +10,8 @@ android {
         minSdkVersion 14
         targetSdkVersion 19
         //每次发布版本versionCode必须加1
-        versionCode 66
-        versionName "0.1.66"
+        versionCode 75
+        versionName "0.1.75"
     }
 
     signingConfigs {
@@ -46,6 +46,7 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'org.sufficientlysecure:html-textview:1.4'
+    compile 'com.squareup.okhttp:okhttp:2.6.0'
 }
 
 
