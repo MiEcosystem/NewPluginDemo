@@ -3,10 +3,14 @@ package com.xiaomi.xmplugindemo;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,6 +34,7 @@ import com.xiaomi.smarthome.device.api.DeviceStat;
 import com.xiaomi.smarthome.device.api.IXmPluginHostActivity;
 import com.xiaomi.smarthome.device.api.Parser;
 import com.xiaomi.smarthome.device.api.SceneInfo;
+import com.xiaomi.smarthome.device.api.UserInfo;
 import com.xiaomi.smarthome.device.api.XmPluginBaseActivity;
 import com.xiaomi.smarthome.device.api.XmPluginHostApi;
 
@@ -49,6 +54,8 @@ public class TestCaseActivity extends XmPluginBaseActivity {
 
     static final int SCAN_BARCODE = 1;
     static final int REQUEST_MENU = 2;
+    static final int REQUEST_CODE_PICK_IMAGE = 3;
+    static final int REQUEST_CODE_PHOTO_WITH_CAMERA = 4;
     LinearLayout mListContainer;
     LayoutInflater mInflater;
     DemoDevice mDevice;
@@ -422,6 +429,76 @@ public class TestCaseActivity extends XmPluginBaseActivity {
             }
         });
 
+        addTestCase("本地ping接口", new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                XmPluginHostApi.instance().localPing(mDeviceStat.did, new Callback<Void>() {
+                    @Override
+                    public void onSuccess(Void result) {
+                        Toast.makeText(activity(),"onSuccess",Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onFailure(int error, String errorInfo) {
+                        Toast.makeText(activity(),"onFailure",Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+
+        addTestCase("local ping", new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                XmPluginHostApi.instance().localPing(mDeviceStat.did, new Callback<Void>() {
+                    @Override
+                    public void onSuccess(Void result) {
+                        Log.d("localping","onSuccess");
+                    }
+
+                    @Override
+                    public void onFailure(int error, String errorInfo) {
+                        Log.d("localping","onFailure");
+                    }
+                });
+            }
+        });
+
+        addTestCase("相册中获取图片", new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_PICK);
+                intent.setType("image/*");//相片类型
+                activity().startActivityForResult(intent, REQUEST_CODE_PICK_IMAGE);
+            }
+        });
+
+        addTestCase("拍照中获取图片", new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                Uri imageUri = Uri.fromFile(new File(Environment.getExternalStorageDirectory(),"image.jpg"));
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+                activity().startActivityForResult(intent, REQUEST_CODE_PHOTO_WITH_CAMERA);
+            }
+        });
+
+        addTestCase("测试获取用户信息", new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                XmPluginHostApi.instance().getUserInfo(XmPluginHostApi.instance().getAccountId(), new Callback<UserInfo>() {
+                    @Override
+                    public void onSuccess(UserInfo userInfo) {
+                        Log.d("getUserInfo","onSuccess");
+                    }
+
+                    @Override
+                    public void onFailure(int i, String s) {
+                        Log.d("getUserInfo","onFailure");
+                    }
+                });
+            }
+        });
+
 
     }
 
@@ -537,6 +614,15 @@ public class TestCaseActivity extends XmPluginBaseActivity {
             } else if (requestCode == REQUEST_MENU) {
                 String result = data.getStringExtra("menu");
                 Toast.makeText(activity(), result, Toast.LENGTH_SHORT).show();
+            } else if(requestCode == REQUEST_CODE_PICK_IMAGE){
+                Uri uri = data.getData();
+                Toast.makeText(activity(),uri.toString(),Toast.LENGTH_SHORT).show();
+            }else if(requestCode == REQUEST_CODE_PHOTO_WITH_CAMERA){
+                Bitmap bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory()+"/image.jpg");
+                if(bitmap!=null){
+                    Toast.makeText(activity(),"获取图片成功",Toast.LENGTH_SHORT).show();
+                    bitmap.recycle();
+                }
             }
 
         }

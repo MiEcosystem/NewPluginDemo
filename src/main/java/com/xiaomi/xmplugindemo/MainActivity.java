@@ -138,6 +138,7 @@ public class MainActivity extends XmPluginBaseActivity implements StateChangedLi
         });
 
         mHostActivity.enableVerifyPincode();
+        mHostActivity.enableAd();
     }
 
     void openMoreActivity(){

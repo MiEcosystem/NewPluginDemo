@@ -6,8 +6,6 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -20,8 +18,7 @@ import com.xiaomi.smarthome.device.api.DeviceStat;
 import com.xiaomi.smarthome.device.api.IXmPluginHostActivity;
 import com.xiaomi.smarthome.device.api.XmPluginBaseActivity;
 import com.xiaomi.smarthome.device.api.XmPluginHostApi;
-
-import org.json.JSONArray;
+import com.xiaomi.xmplugindemo.ad.PluginAdActivity;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -162,6 +159,13 @@ public class ApiDemosActivity extends XmPluginBaseActivity {
                 Toast.makeText(activity(),"定时设置成功，5s后重新启动插件",Toast.LENGTH_SHORT).show();
                 finishParent(null);
 
+            }
+        });
+
+        findViewById(R.id.activity_show_ad).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(), PluginAdActivity.class.getName());
             }
         });
     }

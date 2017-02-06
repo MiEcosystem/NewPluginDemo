@@ -17,4 +17,18 @@
     <!-- welcome -->
     <string name="welcome_developer">你好，开发者 \n\n 终于等到你的到来，在小米智能硬件平台，您有机会创造出惊艳世界的智能产品。 \n\n 未来是智能化的时代，我们准备好了，你呢?</string>
 
+    <!--advertisement-->
+    <string name="ad_pop">插屏弹窗</string>
+    <string name="ad_bottom_pop">底部弹窗</string>
+    <string name="ad_banner">Banner广告</string>
+    <string name="ad_notice">横切公告</string>
+    <string name="ad_hot_spot">热区广告</string>
+    <string name="ad_hot_spot_desc">热区广告的样式由插件开发者自行定义，展示后请上报广告的展示事件，便于统计</string>
+    <string name="ad_pop_show">获取插屏弹窗</string>
+    <string name="ad_bottom_pop_show">获取底部下方弹窗</string>
+    <string name="ad_banner_show">获取Banner广告</string>
+    <string name="ad_notice_show">获取横切公告</string>
+    <string name="ad_show_success">获取广告成功</string>
+    <string name="ad_show_fail">获取广告失败</string>
+
 </resources>
